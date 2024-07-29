@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>My first three.js app</title>
+	</head>
+	<body>
+		<canvas id="myCanvas"></canvas>
+		<script>
+			const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.5, 1000 );
+
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild( renderer.domElement );
+
+const cubeMaterial = new THREE.MeshBasicMaterial( { color: 0xffff00 } ); // Yellow color for the cube
+const cubeg = new THREE.BoxGeometry( 1, 1, 1 );
+const cube = new THREE.Mesh( cubeg, cubeMaterial );
+
+const platformMaterial = new THREE.MeshBasicMaterial( { color: 0x00ff00 } ); // Green color for the platform
+const platformg = new THREE.BoxGeometry(50, 1, 50); // Adjusted dimensions for the platform
+const platform = new THREE.Mesh( platformg, platformMaterial );
+
+scene.add( cube );
+scene.add( platform );
+
+// Move the platform under the cube
+platform.position.y = -1; // Adjust this value as needed
+
+// Position the camera above and at an angle
+camera.position.set(0, 5, 10);
+camera.lookAt(cube.position);
+
+// Object to keep track of which keys are pressed
+const keysPressed = {};
+
+// Variables for jumping
+let isJumping = false;
+let verticalVelocity = 0;
+const gravity = -0.05; // Increased gravity for faster jump
+
+// Function to handle key down events
+function onDocumentKeyDown(event) {
+    keysPressed[event.key] = true;
+    if (event.key === ' ') { // Spacebar key
+        if (!isJumping) {
+            verticalVelocity = 0.5; // Initial jump velocity
+            isJumping = true;
+        }
+    }
+}
+
+// Function to handle key up events
+function onDocumentKeyUp(event) {
+    keysPressed[event.key] = false;
+}
+
+// Add event listeners for keydown and keyup
+document.addEventListener("keydown", onDocumentKeyDown, false);
+document.addEventListener("keyup", onDocumentKeyUp, false);
+
+function animate() {
+    // Check which keys are pressed and move the cube accordingly
+    if (keysPressed['w']) { // 'W' key
+        cube.position.z -= 0.5 * Math.cos(cube.rotation.y); // Move the cube forward
+        cube.position.x -= 0.5 * Math.sin(cube.rotation.y);
+    }
+    if (keysPressed['s']) { // 'S' key
+        cube.position.z += 0.5 * Math.cos(cube.rotation.y); // Move the cube backward
+        cube.position.x += 0.5 * Math.sin(cube.rotation.y);
+    }
+    if (keysPressed['a']) { // 'A' key
+        cube.position.x -= 0.5; // Move the cube left
+    }
+    if (keysPressed['d']) { // 'D' key
+        cube.position.x += 0.5; // Move the cube right
+    }
+    if (keysPressed['ArrowRight']) { // Right arrow key
+        cube.rotation.y -= 0.05; // Rotate the cube to the right
+    }
+    if (keysPressed['ArrowLeft']) { // Left arrow key
+        cube.rotation.y += 0.05; // Rotate the cube to the left
+    }
+	// Up and down rotation for cube
+	// if (keysPressed['ArrowUp']) {
+	// 	cube.rotation.x -= 0.05;
+	// }
+	// if (keysPressed['ArrowDown']) {
+	// 	cube.rotation.x += 0.05;
+	// }
+
+    // Apply gravity and vertical velocity for jumping
+    if (isJumping) {
+        verticalVelocity += gravity;
+        cube.position.y += verticalVelocity;
+
+        // Check if the cube has landed
+        if (cube.position.y <= 0) {
+            cube.position.y = 0;
+            isJumping = false;
+            verticalVelocity = 0;
+        }
+    }
+
+    // Update the camera position to follow the cube
+    camera.position.x = cube.position.x + 10 * Math.sin(cube.rotation.y);
+    camera.position.z = cube.position.z + 10 * Math.cos(cube.rotation.y);
+    camera.position.y = cube.position.y + 5; // Keep the camera above the cube
+    camera.lookAt(cube.position); // Ensure the camera always looks at the cube
+
+    requestAnimationFrame(animate);
+    renderer.render( scene, camera );
+}
+animate();
+
+		</script>
+	</body>
+</html>
